@@ -1,5 +1,5 @@
 # Fully fletched samza image
-FROM qnib/java7
+FROM qnib/java7:oracle
 
 RUN useradd hadoop
 ENV HADOOP_VER=2.5.2 \
@@ -59,7 +59,6 @@ RUN echo "tail -f /var/log/supervisor/zookeeper.log" >> /root/.bash_history && \
 ENV KAFKA_VER=0.8.2.1 \
     API_VER=2.11
 RUN curl -fLs http://apache.mirrors.pair.com/kafka/${KAFKA_VER}/kafka_${API_VER}-${KAFKA_VER}.tgz | tar xzf - -C /opt && mv /opt/kafka_${API_VER}-${KAFKA_VER} /opt/kafka/
-RUN yum install -y jq
 ADD etc/supervisord.d/kafka*.ini /etc/supervisord.d/
 ADD opt/kafka/config/server.properties /opt/kafka/config/
 ADD opt/qnib/kafka/bin/*.sh /opt/qnib/kafka/bin/
@@ -85,12 +84,7 @@ RUN ssh-keygen -t dsa -P '' -f ~/.ssh/id_dsa && \
 ADD ssh/config /home/hadoop/.ssh/config
 RUN curl -sfL https://github.com/apache/samza-hello-samza/archive/master.zip |bsdtar xf - -C /opt/ && \
     cd /opt/samza-hello-samza-master && \
-    sed -i -e 's/localhost:2181/zookeeper.service.consul:2181/' build.gradle  && \
     mvn clean package
 RUN mkdir -p /opt/samza-hello-samza-master/deploy/ && \
-    tar xzf /opt/samza-hello-samza-master/target/hello-samza-0.10.0-dist.tar.gz -C /opt/samza-hello-samza-master/deploy/ && \
-    sed -i -e 's/localhost:2181/zookeeper.service.consul:2181/' /opt/samza-hello-samza-master/deploy/config/wikipedia-feed.properties && \
-    sed -i -e 's/localhost:9092/kafka.service.consul:9092/' /opt/samza-hello-samza-master/deploy/config/wikipedia-feed.properties && \
-    sed -i -e 's/localhost:2181/zookeeper.service.consul:2181/' /opt/samza-hello-samza-master/deploy/config/wikipedia-parser.properties && \
-    sed -i -e 's/localhost:9092/kafka.service.consul:9092/' /opt/samza-hello-samza-master/deploy/config/wikipedia-parser.properties
+    tar xzf /opt/samza-hello-samza-master/target/hello-samza-0.10.0-dist.tar.gz -C /opt/samza-hello-samza-master/deploy/ 
 USER root
