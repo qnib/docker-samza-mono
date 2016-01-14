@@ -1,0 +1,72 @@
+consul:
+    extends:
+      file: base.yml
+      service: base
+    hostname: consul
+    container_name: consul
+    image: qnib/consul
+    environment:
+    - RUN_SERVER=true
+    - BOOTSTRAP_CONSUL=true
+    - FORWARD_TO_KAFKA=false
+    ports:
+    - "8500:8500"
+
+zkui:
+    extends:
+      file: base.yml
+      service: base
+    hostname: zkui
+    container_name: zkui
+    image: qnib/zkui
+    links:
+    - consul:consul
+    ports:
+    - 9090:9090
+
+kafkaMonitor:
+    extends:
+      file: base.yml
+      service: base
+    image: qnib/kafka-monitor
+    hostname: kafka-monitor
+    container_name: kafka-monitor
+    links:
+    - consul:consul
+    - samza:kafka
+    ports:
+    - 8080:8080
+
+kafkaMgr:
+    extends:
+      file: base.yml
+      service: base
+    image: qnib/kafka-manager
+    hostname: kafka-manager
+    container_name: kafka-manager
+    environment:
+    - APPLICATION_SECRET=letmein
+    ports:
+    - 9000:9000
+    volumes:
+    - ./conf/:/kafka-manager-1.2.7/conf/
+    links:
+    - consul:consul
+    - samza:zookeeper
+
+
+samza:
+    extends:
+      file: base.yml
+      service: base
+    hostname: samza
+    container_name: samza
+    image: qnib/samza-mono
+    environment: 
+     - YARN_LOG_DIR=/data/hadoopdata/logs/
+    links:
+    - consul:consul
+    ports:
+    - 8042:8042
+    - 8088:8088
+    - 50070:50070

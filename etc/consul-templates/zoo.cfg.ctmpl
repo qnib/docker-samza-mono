@@ -1,0 +1,7 @@
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir=/tmp/zookeeper/
+clientPort=2181
+{{$myip := env "ZK_ADDV_ADDR"}}{{$myid := env "MYID"}}{{if ne $myid ""}}{{range $i, $e := service "zookeeper@dc1" "any"}}{{$idx := add $i 1}}server.{{$idx}}={{if eq $myip $e.Address}}0.0.0.0{{else}}{{$e.Address}}{{end}}:2888:3888
+{{end}}{{end}}
