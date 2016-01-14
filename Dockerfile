@@ -1,5 +1,5 @@
 # Fully fletched samza image
-FROM qnib/java7:oracle
+FROM qnib/java7
 
 RUN useradd hadoop
 ENV HADOOP_VER=2.5.2 \
