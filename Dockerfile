@@ -74,6 +74,12 @@ RUN echo "/opt/kafka/bin/kafka-console-consumer.sh --zookeeper zookeeper.service
 ADD opt/qnib/consul/etc/bash_functions /opt/qnib/consul/etc/
 ADD opt/qnib/kafka/bin/show_topics.py /opt/qnib/kafka/bin/
 
+## Samza
+RUN yum install -y git-core
+RUN git clone http://git-wip-us.apache.org/repos/asf/samza.git /opt/samza && \
+    cd /opt/samza && \
+    ./gradlew  publishToMavenLocal
+
 ## Hello Samza
 RUN chown hadoop: /opt/
 USER hadoop
@@ -83,8 +89,9 @@ RUN ssh-keygen -t dsa -P '' -f ~/.ssh/id_dsa && \
     chmod 0600 ~/.ssh/authorized_keys
 ADD ssh/config /home/hadoop/.ssh/config
 RUN curl -sfL https://github.com/apache/samza-hello-samza/archive/master.zip |bsdtar xf - -C /opt/ && \
-    cd /opt/samza-hello-samza-master && \
+    mv /opt/samza-hello-samza-master /opt/hello-samza/ && \
+    cd /opt/hello-samza && \
     mvn clean package
-RUN mkdir -p /opt/samza-hello-samza-master/deploy/ && \
-    tar xzf /opt/samza-hello-samza-master/target/hello-samza-0.10.0-dist.tar.gz -C /opt/samza-hello-samza-master/deploy/ 
+RUN mkdir -p /opt/hello-samza/deploy/samza/ && \
+    tar xzf /opt/hello-samza/target/hello-samza-0.10.0-dist.tar.gz -C /opt/hello-samza/deploy/samza/
 USER root
